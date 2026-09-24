@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint
+        run: swift format lint --strict --recursive Sources Tests Package.swift
+      - name: Build
+        run: swift build --configuration release
+      - name: Test
+        run: swift test
+      - name: Smoke test
+        run: |
+          bin="$(swift build --configuration release --show-bin-path)/seckey-dialog"
+          "$bin" --version
+          "$bin" settings
+          printf 'GETINFO flavor\nBYE\n' | "$bin" | grep -x 'D seckey-dialog'
